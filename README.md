@@ -15,10 +15,8 @@ pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-rec
 
 
 #### References:
-##### References:
-###### References:
-1. Groppe DM, Bickel S, Dykstra AR, Wang X, Mégevand P, Mercier MR, Lado FA, Mehta AD, Honey CJ. iELVis: An open source MATLAB toolbox for localizing and visualizing human intracranial electrode data. Journal of Neuroscience Methods, 2017. https://doi.org/10.1016/j.jneumeth.2017.01.022
-2. Fischl B. FreeSurfer. NeuroImage, 2012. https://doi.org/10.1016/j.neuroimage.2012.01.021
-3. Desikan RS, Ségonne F, Fischl B, Quinn BT, , Dickerson BC, Blacker D, Buckner RL, Dale AM, Maguire RP, Hyman BT, Albert MS, Killiany RJ. An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. NeuroImage, 2006. https://doi.org/10.1016/j.neuroimage.2006.01.021
-4. Destrieux C, Fischhl B, Dale A, Halgren E. Automatic parcellation of human cortical gyri and sulci using standard anatomical nomenclature. NeuroImage, 2010. https://doi.org/10.1016/j.neuroimage.2010.06.010
-5. Mercier MR, Bickel S, Megevand P, Groppe DM, Schroeder CE, Mehta AD, Lado FA. Evaluation of cortical local field potential diffusion in stereotactic electro-encephalography recordings: A glimpse on white matter signal. NeuroImage, 2017. https://doi.org/10.1016/j.neuroimage.2016.08.037
+1. Groppe DM, Bickel S, Dykstra AR, Wang X, Mégevand P, Mercier MR, Lado FA, Mehta AD, Honey CJ. iELVis: An open source MATLAB toolbox for localizing and visualizing human intracranial electrode data. Journal of Neuroscience Methods. 2017. https://doi.org/10.1016/j.jneumeth.2017.01.022
+2. Fischl B. FreeSurfer. NeuroImage. 2012. https://doi.org/10.1016/j.neuroimage.2012.01.021
+3. Desikan RS, Ségonne F, Fischl B, Quinn BT, Dickerson BC, Blacker D, Buckner RL, Dale AM, Maguire RP, Hyman BT, Albert MS, Killiany RJ. An automated labeling system for subdividing the human cerebral cortex on MRI scans into gyral based regions of interest. NeuroImage. 2006. https://doi.org/10.1016/j.neuroimage.2006.01.021
+4. Destrieux C, Fischhl B, Dale A, Halgren E. Automatic parcellation of human cortical gyri and sulci using standard anatomical nomenclature. NeuroImage. 2010. https://doi.org/10.1016/j.neuroimage.2010.06.010
+5. Mercier MR, Bickel S, Megevand P, Groppe DM, Schroeder CE, Mehta AD, Lado FA. Evaluation of cortical local field potential diffusion in stereotactic electro-encephalography recordings: A glimpse on white matter signal. NeuroImage. 2017. https://doi.org/10.1016/j.neuroimage.2016.08.037
