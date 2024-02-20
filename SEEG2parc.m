@@ -13,15 +13,10 @@ function elecInfo=SEEG2parc(fsSubj,cfg)
 %     parcType:     (string) either 'DK' (default) for the Desikan-Killiany
 %                   parcellation or 'Des' for the Destrieux parcellation
 %
-%     tissueType:   (string) 'cortex' (default) if only cortical tissue (+ 
+%     tissueType:   (string) 'cortex' if only cortical tissue 
 %                   hippocampus and amygdala) is to be considered,
-%                   otherwise all FreeSurfer parcellation labels are used
-%
-%     parcMethod:   (string) 'deterministic' (default) if only the label 
-%                   with the strongest weight is to be considered, 
-%                   otherwise all parcellation labels near the electrode 
-%                   are returned, together with their weights (in fractions
-%                   of 1)
+%                   otherwise (default) all FreeSurfer parcellation labels 
+%                   are used
 %
 % Outputs:
 %
@@ -39,8 +34,60 @@ function elecInfo=SEEG2parc(fsSubj,cfg)
 %     column 5:     tissue label(s); returns 'unknown' if no valid tissue
 %                   label was found near the electrode
 %
-%     column 6:     weight of each tissue label (NaN if parcMethod is
-%                   'deterministic', or if tissue label is 'unknown')
+%     column 6:     weight of each tissue label ([] if tissue label is 
+%                   'unknown')
+%
+% The attribution of tissue labels is based on a 3x3x3-voxel cube centered
+% around the electrode coordinate. Tissue labels are weighted like so:
+%
+%          +--------+--------+--------+
+%         /    _   /    _   /    _   /|
+%        /   \/3  /   \/2  /   \/3  / |
+%       +--------+--------+--------+  |
+%      /    _   /        /    _   /|  |
+%     /   \/2  /    1   /   \/2  / |  +
+%    +--------+--------+--------+  | /
+%   /    _   /    _   /    _   /|  |/
+%  /   \/3  /   \/2  /   \/3  / |  +
+% +--------+--------+--------+  | /
+% |        |        |        |  |/
+% |        |        |        |  +
+% |        |        |        | /
+% |        |        |        |/
+% +--------+--------+--------+
+% 
+%          +--------+--------+--------+
+%         /    _   /        /    _   /|
+%        /   \/2  /    1   /   \/2  / |
+%       +--------+--------+--------+  |
+%      /        /        /        /|  |
+%     /    1   /    1   /    1   / |  +
+%    +--------+--------+--------+  | /
+%   /    _   /        /    _   /|  |/
+%  /   \/2  /    1   /   \/2  / |  +
+% +--------+--------+--------+  | /
+% |        |        |        |  |/
+% |        |        |        |  +
+% |        |        |        | /
+% |        |        |        |/
+% +--------+--------+--------+
+% 
+%          +--------+--------+--------+
+%         /    _   /    _   /    _   /|
+%        /   \/3  /   \/2  /   \/3  / |
+%       +--------+--------+--------+  |
+%      /    _   /        /    _   /|  |
+%     /   \/2  /    1   /   \/2  / |  +
+%    +--------+--------+--------+  | /
+%   /    _   /    _   /    _   /|  |/
+%  /   \/3  /   \/2  /   \/3  / |  +
+% +--------+--------+--------+  | /
+% |        |        |        |  |/
+% |        |        |        |  +
+% |        |        |        | /
+% |        |        |        |/
+% +--------+--------+--------+
+% 
 %
 % Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2022.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
@@ -55,8 +102,7 @@ if nargin==1
 end
 
 if ~isfield(cfg,'parcType'), parcType='DK'; else, parcType=cfg.parcType; end
-if ~isfield(cfg,'tissueType'), tissueType='cortex'; else, tissueType=cfg.tissueType; end
-if ~isfield(cfg,'parcMethod'), parcMethod='deterministic'; else, parcMethod=cfg.parcMethod; end
+if ~isfield(cfg,'tissueType'), tissueType='all'; else, tissueType=cfg.tissueType; end
 
 switch parcType
     case 'DK' % Desikan-Killiany parcellation: Desikan et al., Neuroimage 2006; https://doi.org/10.1016/j.neuroimage.2006.01.021
@@ -136,7 +182,8 @@ for ctElec=1:nElec
             % in case there is no cortical tissue
             if all(isnan(voxelCube),'all')
                 elecInfo{ctElec,5}='unknown';
-                elecInfo{ctElec,6}=NaN;
+                elecInfo{ctElec,6}='unknown';
+                elecInfo{ctElec,7}=[];
                 continue
             end
         end
@@ -163,18 +210,14 @@ for ctElec=1:nElec
             voxelCubeLabels{ctLbl}=fsLut{voxelCubeUniqueSorted(ctLbl)==fsLutIdx,2};
         end
         
-        % if deterministic approach is required by user
-        if strcmp(parcMethod,'deterministic')
-            elecInfo{ctElec,5}=voxelCubeLabels{1};
-            elecInfo{ctElec,6}=NaN;
-        else
-            elecInfo{ctElec,5}=voxelCubeLabels;
-            elecInfo{ctElec,6}=voxelCubeUniqueWeightSorted;
-        end
+        elecInfo{ctElec,5}=voxelCubeLabels{1};
+        elecInfo{ctElec,6}=voxelCubeLabels;
+        elecInfo{ctElec,7}=voxelCubeUniqueWeightSorted;
         
     else % this electrode is not a depth
         elecInfo{ctElec,5}='unknown';
-        elecInfo{ctElec,6}=NaN;
+        elecInfo{ctElec,6}='unknown';
+        elecInfo{ctElec,7}=[];
     end
     
 end
