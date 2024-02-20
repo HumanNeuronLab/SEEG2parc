@@ -31,11 +31,15 @@ function elecInfo=SEEG2parc(fsSubj,cfg)
 %     column 4:     electrode coordinates, in patient space, in LIP
 %                   coordinates (fom iELVis)
 %
-%     column 5:     tissue label(s); returns 'unknown' if no valid tissue
-%                   label was found near the electrode
+%     column 5:     tissue label(s), deterministic; returns 'unknown' if no
+%                   valid tissue label was found near the electrode
 %
-%     column 6:     weight of each tissue label ([] if tissue label is 
-%                   'unknown')
+%     column 6:     tissue label(s), probabilistic; if there is only 1
+%                   label, column 6 is equal to column 5; returns 'unknown'
+%                   if no valid tissue label was found near the electrode
+%
+%     column 7:     weight of each tissue label in column 6 ([] if tissue 
+%                   label is 'unknown')
 %
 % The attribution of tissue labels is based on a 3x3x3-voxel cube centered
 % around the electrode coordinate. Tissue labels are weighted like so:

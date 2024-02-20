@@ -11,7 +11,7 @@ Requisites: iELVis, https://github.com/iELVis/iELVis/tree/iELVis_pm.
 
 The tissue labels are taken from a 3x3x3-voxel cube surrounding the electrode coordinate and are weighted like so:
 
-<pre>    +--------+--------+--------+
+<pre>         +--------+--------+--------+
         /    _   /    _   /    _   /|
        /   \/3  /   \/2  /   \/3  / |
       +--------+--------+--------+  |
@@ -43,7 +43,7 @@ The tissue labels are taken from a 3x3x3-voxel cube surrounding the electrode co
 |        |        |        |/
 +--------+--------+--------+
 
-          +--------+--------+--------+
+         +--------+--------+--------+
         /    _   /    _   /    _   /|
        /   \/3  /   \/2  /   \/3  / |
       +--------+--------+--------+  |
