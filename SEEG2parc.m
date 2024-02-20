@@ -93,7 +93,8 @@ function elecInfo=SEEG2parc(fsSubj,cfg)
 % +--------+--------+--------+
 % 
 %
-% Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2022.
+% https://github.com/HumanNeuronLab/SEEG2parc
+% Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2024.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
 
