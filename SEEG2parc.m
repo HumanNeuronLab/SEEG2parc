@@ -77,13 +77,12 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %         /    _   /    _   /    _   /|
 %        /   \/3  /   \/2  /   \/3  / |
 %       +--------+--------+--------+  |
-%      /    _   /        /    _   /|  |
-%     /   \/2  /    1   /   \/2  / |  +
-%    +--------+--------+--------+  | /
-%   /    _   /    _   /    _   /|  |/
-%  /   \/3  /   \/2  /   \/3  / |  +
-% +--------+--------+--------+  | /
-% |        |        |        |  |/
+%      /    _   /        /    _   /|  +
+%     /   \/2  /    1   /   \/2  / | /
+%    +--------+--------+--------+  |/
+%   /    _   /    _   /    _   /|  +
+%  /   \/3  /   \/2  /   \/3  / | /
+% +--------+--------+--------+  |/
 % |        |        |        |  +
 % |        |        |        | /
 % |        |        |        |/
@@ -93,13 +92,12 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %         /    _   /        /    _   /|
 %        /   \/2  /    1   /   \/2  / |
 %       +--------+--------+--------+  |
-%      /        /        /        /|  |
-%     /    1   /    1   /    1   / |  +
-%    +--------+--------+--------+  | /
-%   /    _   /        /    _   /|  |/
-%  /   \/2  /    1   /   \/2  / |  +
-% +--------+--------+--------+  | /
-% |        |        |        |  |/
+%      /        /        /        /|  +
+%     /    1   /    1   /    1   / | /
+%    +--------+--------+--------+  |/
+%   /    _   /        /    _   /|  +
+%  /   \/2  /    1   /   \/2  / | /
+% +--------+--------+--------+  |/
 % |        |        |        |  +
 % |        |        |        | /
 % |        |        |        |/
@@ -109,13 +107,12 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %         /    _   /    _   /    _   /|
 %        /   \/3  /   \/2  /   \/3  / |
 %       +--------+--------+--------+  |
-%      /    _   /        /    _   /|  |
-%     /   \/2  /    1   /   \/2  / |  +
-%    +--------+--------+--------+  | /
-%   /    _   /    _   /    _   /|  |/
-%  /   \/3  /   \/2  /   \/3  / |  +
-% +--------+--------+--------+  | /
-% |        |        |        |  |/
+%      /    _   /        /    _   /|  +
+%     /   \/2  /    1   /   \/2  / | /
+%    +--------+--------+--------+  |/
+%   /    _   /    _   /    _   /|  +
+%  /   \/3  /   \/2  /   \/3  / | /
+% +--------+--------+--------+  |/
 % |        |        |        |  +
 % |        |        |        | /
 % |        |        |        |/
@@ -135,10 +132,10 @@ if ~exist(filePath,'dir'), error('Patient folder not found.'); end
 
 switch parcType
     case 'DK' % Desikan-Killiany parcellation: Desikan et al., Neuroimage 2006; https://doi.org/10.1016/j.neuroimage.2006.01.021
-        myParcVol='aparc+aseg.mgz';
+        myParcVol='aparc+aseg.nii';
         %onlyCtx=[17,18,53,54,1001:1035,2001:2035]'; % only hippocampus, amygdala and cortical labels from DK parcellation
     case 'Des' % Destrieux parcellation: Destrieux et al., Neuroimage 2010; https://doi.org/10.1016/j.neuroimage.2010.06.010
-        myParcVol='aparc.a2009s+aseg.mgz';
+        myParcVol='aparc.a2009s+aseg.nii';
         %onlyCtx=[17,18,53,54,11101:11175,12101:12175]'; % only hippocampus, amygdala and cortical labels from Destrieux parcellation
     otherwise
         error('I do not recognize this parcellation: %s.',parcType);
@@ -158,7 +155,7 @@ switch cfg.dataType
         elecCoord=readiELVisElecCoord(patID,'LEPTOVOX');
         
         % load volume parcellations (ILA)
-        wmparc=MRIread(fullfile(filePath,'mri','wmparc.mgz')); % load white matter parcellation
+        wmparc=MRIread(fullfile(filePath,'mri','wmparc.nii')); % load white matter parcellation
         parcVol=MRIread(fullfile(filePath,'mri',myParcVol)); % load volume parcellation
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
         
@@ -175,7 +172,7 @@ switch cfg.dataType
         elecCoord(:,3)=256-elecCoord(:,3); % make them LIP like iELVis
         
         % load volume parcellations (ILA)
-        wmparc=MRIread(fullfile(filePath,'anat',[patID '_wmparc.mgz'])); % load white matter parcellation
+        wmparc=MRIread(fullfile(filePath,'anat',[patID '_wmparc.nii'])); % load white matter parcellation
         parcVol=MRIread(fullfile(filePath,'anat',[patID '_' myParcVol])); % load volume parcellation
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
         
