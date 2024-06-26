@@ -120,7 +120,7 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %
 %
 % https://github.com/HumanNeuronLab/SEEG2parc
-% Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2024.
+% Pierre M?gevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2024.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
 if ~isfield(cfg,'dataType'), error('Please specify data type (iELVis or BIDS).'); end
@@ -132,10 +132,10 @@ if ~exist(filePath,'dir'), error('Patient folder not found.'); end
 
 switch parcType
     case 'DK' % Desikan-Killiany parcellation: Desikan et al., Neuroimage 2006; https://doi.org/10.1016/j.neuroimage.2006.01.021
-        myParcVol='aparc+aseg.nii';
+        myParcVol='aparc+aseg';
         %onlyCtx=[17,18,53,54,1001:1035,2001:2035]'; % only hippocampus, amygdala and cortical labels from DK parcellation
     case 'Des' % Destrieux parcellation: Destrieux et al., Neuroimage 2010; https://doi.org/10.1016/j.neuroimage.2010.06.010
-        myParcVol='aparc.a2009s+aseg.nii';
+        myParcVol='aparc.a2009s+aseg';
         %onlyCtx=[17,18,53,54,11101:11175,12101:12175]'; % only hippocampus, amygdala and cortical labels from Destrieux parcellation
     otherwise
         error('I do not recognize this parcellation: %s.',parcType);
@@ -156,7 +156,13 @@ switch cfg.dataType
         
         % load volume parcellations (ILA)
         wmparc=MRIread(fullfile(filePath,'mri','wmparc.nii')); % load white matter parcellation
-        parcVol=MRIread(fullfile(filePath,'mri',myParcVol)); % load volume parcellation
+        if isempty(wmparc)
+            wmparc=MRIread(fullfile(filePath,'mri','wmparc.mgz'));
+        end
+        parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.nii'])); % load volume parcellation
+        if isempty(parcVol)
+            parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.mgz']));
+        end
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
         
     case 'BIDS'
@@ -172,10 +178,15 @@ switch cfg.dataType
         elecCoord(:,3)=256-elecCoord(:,3); % make them LIP like iELVis
         
         % load volume parcellations (ILA)
-        wmparc=MRIread(fullfile(filePath,'anat',[patID '_wmparc.nii'])); % load white matter parcellation
-        parcVol=MRIread(fullfile(filePath,'anat',[patID '_' myParcVol])); % load volume parcellation
+        wmparc=MRIread(fullfile(filePath,'mri','wmparc.nii')); % load white matter parcellation
+        if isempty(wmparc)
+            wmparc=MRIread(fullfile(filePath,'mri','wmparc.mgz'));
+        end
+        parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.nii'])); % load volume parcellation
+        if isempty(parcVol)
+            parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.mgz']));
+        end
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
-        
 end
 
 nElec=size(elecCoord,1);
@@ -320,9 +331,12 @@ end
 %{
 switch cfg.dataType
     case 'iELVis'
-        CT=MRIread(fullfile(filepath,'elec_recon','postInPre.nii'));  % load post-implant CT
+        CT=MRIread(fullfile(filePath,'elec_recon','postInPre.nii'));  % load post-implant CT
+        if isempty(CT)
+            CT=MRIread(fullfile(filePath,'elec_recon','ctINt1.nii'));  % load post-implant CT
+        end
     case 'BIDS'
-        CT=MRIread(fullfile(filepath,'anat',[patID '_postInPre.nii'])); % load post-implant CT
+        CT=MRIread(fullfile(filePath,'anat',[patID '_postInPre.nii'])); % load post-implant CT
 end
 elecCoordRound=round(elecCoord);
 figure;
