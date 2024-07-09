@@ -155,17 +155,13 @@ switch cfg.dataType
         elecCoord=readiELVisElecCoord(patID,'LEPTOVOX');
         
         % load volume parcellations (ILA)
-        wmparc=MRIread(fullfile(filePath,'mri','wmparc.nii')); % load white matter parcellation
-        if isempty(wmparc)
-            wmparc=MRIread(fullfile(filePath,'mri','wmparc.mgz'));
-        end
-        parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.nii'])); % load volume parcellation
-        if isempty(parcVol)
-            parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.mgz']));
-        end
+        wmparc=MRIread(fullfile(filePath,'mri',['wmparc' fileExt])); % load white matter parcellation
+        parcVol=MRIread(fullfile(filePath,'mri',[myParcVol fileExt])); % load volume parcellation
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
         
     case 'BIDS'
+        
+        fileExt='.nii';
         
         % load electrode table
         elecTable=readtable(fullfile(filePath,'ieeg',[patID '_electrodes.tsv']),'FileType','text','Delimiter','\t','ReadVariableNames',true,'ReadRowNames',false);
@@ -178,14 +174,8 @@ switch cfg.dataType
         elecCoord(:,3)=256-elecCoord(:,3); % make them LIP like iELVis
         
         % load volume parcellations (ILA)
-        wmparc=MRIread(fullfile(filePath,'mri','wmparc.nii')); % load white matter parcellation
-        if isempty(wmparc)
-            wmparc=MRIread(fullfile(filePath,'mri','wmparc.mgz'));
-        end
-        parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.nii'])); % load volume parcellation
-        if isempty(parcVol)
-            parcVol=MRIread(fullfile(filePath,'mri',[myParcVol '.mgz']));
-        end
+        wmparc=MRIread(fullfile(filePath,'anat',[patID '_wmparc' fileExt])); % load white matter parcellation
+        parcVol=MRIread(fullfile(filePath,'anat',[patID '_' myParcVol fileExt])); % load volume parcellation
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
 end
 
