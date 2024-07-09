@@ -145,6 +145,8 @@ switch cfg.dataType
     
     case 'iELVis'
         
+        fileExt='.mgz';
+        
         % load electrode names
         elecNames=readiELVisElecNames(patID);
         elecType=elecNames(:,2);
