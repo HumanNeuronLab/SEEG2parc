@@ -1,10 +1,12 @@
 function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 
 % function elecTable=SEEG2parc(cfg)
-% Attribute cerebral parcellation labels to stereo-EEG electrodes.
+% Attribute cerebral parcellation labels to intracranial EEG electrodes.
 %
 % In its current version, the function is compatible both with iELVis and
-% with the BIDS-iEEG output of Voxeloc.
+% with the BIDS-iEEG output of Voxeloc. However, the attribution of
+% parcellation labels to subdural electrodes (ECOG) only works with the
+% iELVis data type.
 %
 % Inputs:
 %
@@ -67,11 +69,12 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %
 %   tissueLabels:   provided as a N-by-1 cell array of strings
 %
-%   tissuWeights:   provided as a N-by-1 numeric cell array
+%   tissueWeights:  provided as a N-by-1 numeric cell array
 %
 %
-% The attribution of tissue labels is based on a 3x3x3-voxel cube centered
-% around the electrode coordinate. Tissue labels are weighted like so:
+% For stereo-EEG electrodes, the attribution of tissue labels is based on a
+% 3x3x3-voxel cube centered around the electrode coordinate. Tissue labels 
+% are weighted like so:
 %
 %          +--------+--------+--------+
 %         /    _   /    _   /    _   /|
@@ -118,9 +121,14 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 % |        |        |        |/
 % +--------+--------+--------+
 %
+% For subdural electrodes, the attribution of tissue labels is based on a
+% 4-mm sphere surrounding the surface vertex closest to the electrode
+% coordinates. Tissue labels within 2 mm have a weight of 1, those between
+% 2 and 3 mm have a weight of 1/sqrt(2), those further than 3 mm have a
+% weight of 1/sqrt(3).
 %
 % https://github.com/HumanNeuronLab/SEEG2parc
-% Pierre M?gevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2024.
+% Pierre Megevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2025.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
 if ~isfield(cfg,'dataType'), error('Please specify data type (iELVis or BIDS).'); end
@@ -133,9 +141,11 @@ if ~exist(filePath,'dir'), error('Patient folder not found.'); end
 switch parcType
     case 'DK' % Desikan-Killiany parcellation: Desikan et al., Neuroimage 2006; https://doi.org/10.1016/j.neuroimage.2006.01.021
         myParcVol='aparc+aseg';
+        myParcSurf='h.aparc.annot';
         %onlyCtx=[17,18,53,54,1001:1035,2001:2035]'; % only hippocampus, amygdala and cortical labels from DK parcellation
     case 'Des' % Destrieux parcellation: Destrieux et al., Neuroimage 2010; https://doi.org/10.1016/j.neuroimage.2010.06.010
         myParcVol='aparc.a2009s+aseg';
+        myParcSurf='h.aparc.a2009s.annot';
         %onlyCtx=[17,18,53,54,11101:11175,12101:12175]'; % only hippocampus, amygdala and cortical labels from Destrieux parcellation
     otherwise
         error('I do not recognize this parcellation: %s.',parcType);
@@ -153,13 +163,24 @@ switch cfg.dataType
         elecHem=elecNames(:,3);
         elecNames=elecNames(:,1);
         
-        % load electrode coordinates (LIP)
-        elecCoord=readiELVisElecCoord(patID,'LEPTOVOX');
+        % load volume electrode coordinates (LIP)
+        elecCoordVol=readiELVisElecCoord(patID,'LEPTOVOX');
+        
+        % load surface electrode coordinates (RAS?)
+        elecCoordSurf=readiELVisElecCoord(patID,'LEPTO');
         
         % load volume parcellations (ILA)
         wmparc=MRIread(fullfile(filePath,'mri',['wmparc' fileExt])); % load white matter parcellation
         parcVol=MRIread(fullfile(filePath,'mri',[myParcVol fileExt])); % load volume parcellation
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
+        
+        % load surface parcellations
+        [vertCoordL,facesCoordL]=read_surf(fullfile(filePath,'surf','lh.pial'));
+        [vertCoordR,facesCoordR]=read_surf(fullfile(filePath,'surf','rh.pial'));
+        [avertsL,alblL,actblL]=read_annotation(fullfile(filePath,'label',['l' myParcSurf]));
+        avertsL=avertsL+1; % FreeSurfer indexing is 0-based
+        [avertsR,alblR,actblR]=read_annotation(fullfile(filePath,'label',['r' myParcSurf]));
+        avertsR=avertsR+1; % FreeSurfer indexing is 0-based
         
     case 'BIDS'
         
@@ -172,8 +193,8 @@ switch cfg.dataType
         elecHem=elecTable.hemisphere;
         
         % voxeloc coords are LIA
-        elecCoord=table2array(elecTable(:,2:4));
-        elecCoord(:,3)=256-elecCoord(:,3); % make them LIP like iELVis
+        elecCoordVol=table2array(elecTable(:,2:4));
+        elecCoordVol(:,3)=256-elecCoordVol(:,3); % make them LIP like iELVis
         
         % load volume parcellations (ILA)
         wmparc=MRIread(fullfile(filePath,'anat',[patID '_wmparc' fileExt])); % load white matter parcellation
@@ -181,12 +202,12 @@ switch cfg.dataType
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
 end
 
-nElec=size(elecCoord,1);
+nElec=size(elecCoordVol,1);
 
-% match elecCoord dimension order and direction with scans
+% match elecCoordVol dimension order and direction with scans
 LIP2ILA=[0 1 0 0;1 0 0 0;0 0 -1 256;0 0 0 1];
-elecCoord=(LIP2ILA*[elecCoord';ones(1,nElec)])';
-elecCoord=elecCoord(:,1:3);
+elecCoordVol=(LIP2ILA*[elecCoordVol';ones(1,nElec)])';
+elecCoordVol=elecCoordVol(:,1:3);
 
 % load FreeSurfer label lookup table
 % provided by FreeSurfer here: https://surfer.nmr.mgh.harvard.edu/fswiki/BIDS
@@ -208,8 +229,8 @@ for ctElec=1:nElec
     if strncmpi(elecType{ctElec},'D',1) % double-check that this is a depth electrode
         
         voxelCubeCoord=[ ...
-            round(elecCoord(ctElec,1))-1, round(elecCoord(ctElec,2))-1, round(elecCoord(ctElec,3))-1; ...
-            round(elecCoord(ctElec,1))+1, round(elecCoord(ctElec,2))+1, round(elecCoord(ctElec,3))+1];
+            round(elecCoordVol(ctElec,1))-1, round(elecCoordVol(ctElec,2))-1, round(elecCoordVol(ctElec,3))-1; ...
+            round(elecCoordVol(ctElec,1))+1, round(elecCoordVol(ctElec,2))+1, round(elecCoordVol(ctElec,3))+1];
         
         % REMmed by Pierre 20220721
         % deal with case where voxel cube would reach beyond the limits of the MRI (unlikely in practice)
@@ -271,9 +292,58 @@ for ctElec=1:nElec
         tissueLabels{ctElec}=voxelCubeLabels;
         tissueWeights{ctElec}=voxelCubeUniqueWeightSorted;
         
-    else % this electrode is not a depth
-        tissueLabels{ctElec}='unknown';
-        tissueWeights{ctElec}=1;
+    elseif any(strncmpi(elecType{ctElec},{'S','G'},1)) % double-check that this is a subdural electrode
+        
+        % determine whether working on L or R hemisphere
+        switch lower(elecHem{ctElec})
+            case 'l'
+                vertCoord=vertCoordL;
+                facesCoord=facesCoordL;
+                actbl=actblL;
+                averts=avertsL;
+                albl=alblL;
+            case 'r'
+                vertCoord=vertCoordR;
+                facesCoord=facesCoordR;
+                actbl=actblR;
+                averts=avertsR;
+                albl=alblR;
+        end
+        
+        % compute distance between electrode and all vertices
+        vertDist=pdist2(vertCoord,elecCoordSurf(ctElec,:),'euclidean');
+        
+        % sort these distances in ascending order and keep track of the indices to the corresponding vertices
+        [vertDistSort,vertDistIdx]=sort(vertDist);
+        
+        % sort labels and retain only those within 4 mm of the one closest to the electrode
+        alblSort=albl(vertDistIdx);
+        alblSortSelect=alblSort(1:find(vertDistSort<vertDistSort(1)+4,1,'last'));
+        
+        % determine label weights (2 cutoffs at 2 and 3 mm)
+        vertDistSortSelect=vertDistSort(1:find(vertDistSort<vertDistSort(1)+4,1,'last'));
+        pialSurfWeights=ones(size(vertDistSortSelect));
+        pialSurfWeights(vertDistSortSelect>vertDistSortSelect(1)+2)=1/sqrt(2);
+        pialSurfWeights(vertDistSortSelect>vertDistSortSelect(1)+3)=1/sqrt(3);
+        
+        % determine unique labels and weights
+        [alblUniq,~,alblUniqIdx]=unique(alblSortSelect,'stable');
+        nLabels=numel(alblUniq);
+        pialSurfLabels=cell(nLabels,1);
+        pialSurfWeightsUniq=zeros(size(pialSurfLabels));
+        for ctUniq=1:nLabels
+            pialSurfLabels(ctUniq)=actbl.struct_names(alblUniq(ctUniq)==actbl.table(:,5));
+            pialSurfWeightsUniq(ctUniq)=sum(pialSurfWeights(alblUniqIdx==ctUniq));
+        end
+        
+        % express weights in fractions of 1
+        pialSurfWeightsUniq=pialSurfWeightsUniq./sum(pialSurfWeightsUniq(:));
+        
+        tissueLabels{ctElec}=pialSurfLabels;
+        tissueWeights{ctElec}=pialSurfWeightsUniq;
+                
+    else
+        error('I did not recognize this type of electrode: %s, %s.',elecNames{ctElec},elecType{ctElec});
     end
     
 end
@@ -296,9 +366,9 @@ end
 if exist('elecTable','var')==1
     
     % update electrode coordinates
-    elecTable.x=elecCoord(:,1);
-    elecTable.y=elecCoord(:,2);
-    elecTable.z=elecCoord(:,3);
+    elecTable.x=elecCoordVol(:,1);
+    elecTable.y=elecCoordVol(:,2);
+    elecTable.z=elecCoordVol(:,3);
     
     % add tissue labels/weights variable
     elecTable.tissueLabels=tissueLabelsWeights(:,1);
@@ -307,7 +377,7 @@ if exist('elecTable','var')==1
 else
     
     % create table from scratch
-    elecTable=table(elecNames,elecCoord(:,1),elecCoord(:,2),elecCoord(:,3),NaN(nElec,1),elecHem,elecType,tissueLabelsWeights(:,1),tissueLabelsWeights(:,2), ...
+    elecTable=table(elecNames,elecCoordVol(:,1),elecCoordVol(:,2),elecCoordVol(:,3),NaN(nElec,1),elecHem,elecType,tissueLabelsWeights(:,1),tissueLabelsWeights(:,2), ...
         'VariableNames',{'name','x','y','z','size','hemisphere','type','tissueLabels','tissueWeights'});
     
 end
@@ -318,7 +388,7 @@ end
 % to write elecTable as a .tsv file:
 % writetable(elecTable,'electrodes.tsv','FileType','text','Delimiter','\t');
 
-%% plotting (useful for debug)
+%% plotting volume (useful for debug)
 
 %{
 switch cfg.dataType
