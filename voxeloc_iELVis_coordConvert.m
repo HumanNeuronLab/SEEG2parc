@@ -1,4 +1,4 @@
-[coord_LEPTOVOX,coord_LEPTOSURF]=voxeloc_iELVis_coordConvert(coord);
+function [coord_LEPTOVOX,coord_LEPTOSURF]=voxeloc_iELVis_coordConvert(coord);
 
 % function [coord_LEPTOVOX,coord_LEPTOSURF]=voxeloc_iELVis_coordConvert(coord)
 % Converts stereo-EEG electrode coordinates from the Voxeloc coordinate
