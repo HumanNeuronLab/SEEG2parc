@@ -1,8 +1,13 @@
-% This script plots the cortica lsurface of both hemispheres, together with
+% This script plots the cortical surface of both hemispheres, together with
 % iEEG electrodes.
+%
 % Requirements:
-%   - iELVis: https://github.com/iELVis/iELVis/tree/iELVis_pm
-%   - SEEG2parc: 
+%   iELVis: https://github.com/iELVis/iELVis/tree/iELVis_pm
+%   SEEG2parc: https://github.com/HumanNeuronLab/SEEG2parc
+%
+% https://github.com/HumanNeuronLab/SEEG2parc
+% Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2026.
+% pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
 
 % provide access path to "FreeSurfer" folder with patient's anatomy
