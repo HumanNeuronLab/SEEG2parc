@@ -21,8 +21,8 @@ function [coord_LEPTOVOX,coord_LEPTOSURF]=voxeloc_iELVis_coordConvert(coord)
 % y: caudal to rostral (posterior to anterior)
 % z: ventral to dorsal (inferior to superior)
 
-% https://github.com/HumanNeuronLab/xxxxxxx
-% Pierre Megevand, Human Neuron Lab, University of Geneva, Switzerland. 2026.
+% https://github.com/HumanNeuronLab/SEEG2parc
+% Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2026.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
 
