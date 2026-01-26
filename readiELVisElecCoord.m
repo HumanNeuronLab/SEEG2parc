@@ -1,6 +1,6 @@
 function elecCoord=readiELVisElecCoord(fsSubj,elecCoordType)
 
-% pierre.megevand@gmail.com
+% pierre.megevand@unige.ch
 
 global globalFsDir;
 

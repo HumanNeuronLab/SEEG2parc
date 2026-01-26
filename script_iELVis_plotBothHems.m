@@ -15,7 +15,7 @@ global globalFsDir;
 globalFsDir='your\path';
 
 % select patient to plot
-fsSubj='PAT_6619';
+fsSubj='PAT_3415';
 [str,rem]=strtok(fsSubj,'_');
 
 % set basic figure plotting parameters

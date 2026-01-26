@@ -1,6 +1,6 @@
 function elecNames=readiELVisElecNames(fsSubj)
 
-% pierre.megevand@gmail.com
+% pierre.megevand@unige.ch
 
 global globalFsDir;
 
