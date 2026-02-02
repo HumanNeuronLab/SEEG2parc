@@ -1,10 +1,8 @@
-function elecCoord=readiELVisElecCoord(fsSubj,elecCoordType)
+function elecCoord=readiELVisElecCoord(datadir,patID,elecCoordType)
 
 % pierre.megevand@unige.ch
 
-global globalFsDir;
-
-fileID=fopen(fullfile(globalFsDir,fsSubj,'elec_recon',[fsSubj '.' upper(elecCoordType)]),'r');
+fileID=fopen(fullfile(datadir,patID,'elec_recon',[patID '.' upper(elecCoordType)]),'r');
 elecCoord=textscan(fileID,'%f','HeaderLines',2);
 elecCoord=cell2mat(elecCoord);
 elecCoord=reshape(elecCoord',3,numel(elecCoord)/3)';

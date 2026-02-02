@@ -1,14 +1,14 @@
-function elecCoordAvg=subj2fsaverage(datadir,subj)
+function elecCoordAvg=subj2fsaverage(filePath)
 
-% function elecCoordAvg=subj2fsaverage(datadir,subj)
+% function elecCoordAvg=subj2fsaverage(datadir,patID)
 % Get iEEG electrode coordinates in the FreeSurfer average brain (MRI305).
 %
 % This is an adaptation from the sub2AvgBrain function of iELVis, by David
 % Groppe and myself. https://github.com/iELVis/iELVis/tree/iELVis_pm
 %
 % Inputs:
-%   datadir         full path to patient's iEEG anatomical information
-%   subj            patient code name
+%   filePath:       full path to folder containing patient's iEEG 
+%                   anatomical information (no trailing slash)
 %
 % Outputs:
 %   elecCoordAvg    N-by-3 matrix with electrode coordinates in the MNI305
@@ -21,10 +21,11 @@ function elecCoordAvg=subj2fsaverage(datadir,subj)
 % Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2026.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
+[datadir,patID]=fileparts(filePath);
 
 % get electrode names and coordinates
-elecNames=readiELVisElecNames(subj);
-elecCoord=readiELVisElecCoord(subj,'LEPTO');
+elecNames=readiELVisElecNames(datadir,patID);
+elecCoord=readiELVisElecCoord(datadir,patID,'LEPTO');
 isDepth=strcmp(elecNames(:,2),'D');
 isLeft=strcmp(elecNames(:,3),'L');
 
@@ -37,10 +38,10 @@ if any(isDepth)
     elecCoordDepth=elecCoord(isDepth,:);
     
     % get MRI transform matrices
-    MRIhdr=MRIread(fullfile(datadir,subj,'mri','brainmask.mgz'),true);
+    MRIhdr=MRIread(fullfile(datadir,patID,'mri','brainmask.mgz'),true);
     Norig=MRIhdr.vox2ras;
     Torig=MRIhdr.tkrvox2ras;
-    TalTransform=freesurfer_read_talxfm(fullfile(datadir,subj,'mri','transforms','talairach.xfm'));
+    TalTransform=freesurfer_read_talxfm(fullfile(datadir,patID,'mri','transforms','talairach.xfm'));
     
     % Pierre took this code from http://surfer.nmr.mgh.harvard.edu/fswiki/CoordinateSystems
     % Section #2 of "Transforms within a subject's anatomical space"
@@ -63,10 +64,10 @@ if any(~isDepth)
     isLeftSubdural=isLeft(~isDepth);
     
     % load pial surfaces
-    [pialSubjL.vert,pialSubjL.tri]=read_surf(fullfile(datadir,subj,'surf','lh.pial'));
-    [pialSubjR.vert,pialSubjR.tri]=read_surf(fullfile(datadir,subj,'surf','rh.pial'));
-    [sphereSubjL.vert,sphereSubjL.tri]=read_surf(fullfile(datadir,subj,'surf','lh.sphere.reg'));
-    [sphereSubjR.vert,sphereSubjR.tri]=read_surf(fullfile(datadir,subj,'surf','rh.sphere.reg'));
+    [pialSubjL.vert,pialSubjL.tri]=read_surf(fullfile(datadir,patID,'surf','lh.pial'));
+    [pialSubjR.vert,pialSubjR.tri]=read_surf(fullfile(datadir,patID,'surf','rh.pial'));
+    [sphereSubjL.vert,sphereSubjL.tri]=read_surf(fullfile(datadir,patID,'surf','lh.sphere.reg'));
+    [sphereSubjR.vert,sphereSubjR.tri]=read_surf(fullfile(datadir,patID,'surf','rh.sphere.reg'));
     [pialAvgL.vert,pialAvgL.tri]=read_surf(fullfile(datadir,'fsaverage','surf','lh.pial'));
     [pialAvgR.vert,pialAvgR.tri]=read_surf(fullfile(datadir,'fsaverage','surf','rh.pial'));
     [sphereAvgL.vert,sphereAvgL.tri]=read_surf(fullfile(datadir,'fsaverage','surf','lh.sphere.reg'));

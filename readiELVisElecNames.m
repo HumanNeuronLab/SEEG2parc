@@ -1,10 +1,8 @@
-function elecNames=readiELVisElecNames(fsSubj)
+function elecNames=readiELVisElecNames(datadir,patID)
 
 % pierre.megevand@unige.ch
 
-global globalFsDir;
-
-fileID=fopen(fullfile(globalFsDir,fsSubj,'elec_recon',[fsSubj '.electrodeNames']),'r');
+fileID=fopen(fullfile(datadir,patID,'elec_recon',[patID '.electrodeNames']),'r');
 elecNames=textscan(fileID,'%s','HeaderLines',2);
 elecNames=elecNames{1};
 elecNames=reshape(elecNames,3,numel(elecNames)/3)';

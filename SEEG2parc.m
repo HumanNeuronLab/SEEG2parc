@@ -137,7 +137,7 @@ if ~isfield(cfg,'parcType'), parcType='DK'; else, parcType=cfg.parcType; end
 if ~isfield(cfg,'filePath'), filePath=uigetdir([],'Select patient folder'); else, filePath=cfg.filePath; end
 if ~exist(filePath,'dir'), error('Patient folder not found.'); end
 
-[~,patID]=fileparts(filePath);
+[datadir,patID]=fileparts(filePath);
 
 switch parcType
     case 'DK' % Desikan-Killiany parcellation: Desikan et al., Neuroimage 2006; https://doi.org/10.1016/j.neuroimage.2006.01.021
@@ -159,16 +159,16 @@ switch cfg.dataType
         fileExt='.mgz';
         
         % load electrode names
-        elecNames=readiELVisElecNames(patID);
+        elecNames=readiELVisElecNames(datadir,patID);
         elecType=elecNames(:,2);
         elecHem=elecNames(:,3);
         elecNames=elecNames(:,1);
         
         % load volume electrode coordinates (LIP)
-        elecCoordVol=readiELVisElecCoord(patID,'LEPTOVOX');
+        elecCoordVol=readiELVisElecCoord(datadir,patID,'LEPTOVOX');
         
         % load surface electrode coordinates (RAS?)
-        elecCoordSurf=readiELVisElecCoord(patID,'LEPTO');
+        elecCoordSurf=readiELVisElecCoord(datadir,patID,'LEPTO');
         
         % load volume parcellations (ILA)
         wmparc=MRIread(fullfile(filePath,'mri',['wmparc' fileExt])); % load white matter parcellation
