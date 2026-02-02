@@ -14,8 +14,9 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %                   fields:
 %
 %     filePath:     (string) full path to folder containing patient's iEEG 
-%                   anatomical information. If missing, a system UI box 
-%                   opens so that the user directs to the correct folder.
+%                   anatomical information (no trailing slash). If missing,
+%                   a system UI box opens so that the user directs to the
+%                   correct folder.
 %
 %     dataType:     (string) either 'iELVis' or 'BIDS'
 %

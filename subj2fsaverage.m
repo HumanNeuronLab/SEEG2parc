@@ -40,7 +40,7 @@ if any(isDepth)
     MRIhdr=MRIread(fullfile(datadir,subj,'mri','brainmask.mgz'),true);
     Norig=MRIhdr.vox2ras;
     Torig=MRIhdr.tkrvox2ras;
-    TalTransform=freesurfer_read_talxfm(fullfile(datadir,subj,'mri','talairach.xfm'));
+    TalTransform=freesurfer_read_talxfm(fullfile(datadir,subj,'mri','transforms','talairach.xfm'));
     
     % Pierre took this code from http://surfer.nmr.mgh.harvard.edu/fswiki/CoordinateSystems
     % Section #2 of "Transforms within a subject's anatomical space"
