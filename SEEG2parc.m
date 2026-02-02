@@ -14,9 +14,8 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 %                   fields:
 %
 %     filePath:     (string) full path to folder containing patient's iEEG 
-%                   anatomical information (no trailing slash). If missing,
-%                   a system UI box opens so that the user directs to the
-%                   correct folder.
+%                   anatomical information. If missing, a system UI box
+%                   opens so that the user directs to the correct folder.
 %
 %     dataType:     (string) either 'iELVis' or 'BIDS'
 %
@@ -137,6 +136,7 @@ if ~isfield(cfg,'parcType'), parcType='DK'; else, parcType=cfg.parcType; end
 if ~isfield(cfg,'filePath'), filePath=uigetdir([],'Select patient folder'); else, filePath=cfg.filePath; end
 if ~exist(filePath,'dir'), error('Patient folder not found.'); end
 
+filePath=regexprep(filePath,'[\\/]+$',''); % remove any trailing slashes
 [datadir,patID]=fileparts(filePath);
 
 switch parcType

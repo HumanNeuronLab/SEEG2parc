@@ -21,6 +21,7 @@ function elecCoordAvg=subj2fsaverage(filePath)
 % Pierre Mégevand, Human Neuron Lab, University of Geneva, Switzerland. 2026.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
+filePath=regexprep(filePath,'[\\/]+$',''); % remove any trailing slashes
 [datadir,patID]=fileparts(filePath);
 
 % get electrode names and coordinates
