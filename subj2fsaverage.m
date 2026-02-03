@@ -8,7 +8,7 @@ function elecCoordAvg=subj2fsaverage(filePath)
 %
 % Inputs:
 %   filePath:       full path to folder containing patient's iEEG 
-%                   anatomical information (no trailing slash)
+%                   anatomical information
 %
 % Outputs:
 %   elecCoordAvg    N-by-3 matrix with electrode coordinates in the MNI305
