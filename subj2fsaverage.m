@@ -1,6 +1,6 @@
 function elecCoordAvg=subj2fsaverage(filePath)
 
-% function elecCoordAvg=subj2fsaverage(datadir,patID)
+% function elecCoordAvg=subj2fsaverage(filePath)
 % Get iEEG electrode coordinates in the FreeSurfer average brain (MRI305).
 %
 % This is an adaptation from the sub2AvgBrain function of iELVis, by David

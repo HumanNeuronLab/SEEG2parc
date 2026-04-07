@@ -211,9 +211,9 @@ elecCoordVol=(LIP2ILA*[elecCoordVol';ones(1,nElec)])';
 elecCoordVol=elecCoordVol(:,1:3);
 
 % load FreeSurfer label lookup table
-% provided by FreeSurfer here: https://surfer.nmr.mgh.harvard.edu/fswiki/BIDS
 % file bundled with SEEG2parc, must be in the path
-fsLut=readtable('labels.tsv','FileType','text','ReadVariableNames',true,'Delimiter','\t');
+fsLut=readtable('FreeSurferColorLUT.txt','CommentStyle','#');
+fsLut.Properties.VariableNames={'index','name','R','G','B','A'};
 
 % define weights for neighboring voxels
 voxelWeights=1/cat(3, ...
@@ -389,7 +389,7 @@ end
 % to write elecTable as a .tsv file:
 % writetable(elecTable,'electrodes.tsv','FileType','text','Delimiter','\t');
 
-%% plotting volume (useful for debug)
+%% plotting volume with original iELVis data (useful for debug)
 
 %{
 switch cfg.dataType
@@ -401,7 +401,7 @@ switch cfg.dataType
     case 'BIDS'
         CT=MRIread(fullfile(filePath,'anat',[patID '_postInPre.nii'])); % load post-implant CT
 end
-elecCoordRound=round(elecCoord);
+elecCoordRound=round(elecCoordVol);
 figure;
 for ctElec=1:nElec
     colormap bone;
@@ -430,6 +430,127 @@ for ctElec=1:nElec
     axis image;
     xlabel('R to L');
     ylabel('S to I');
+    pause;
+end
+%}
+
+
+%% plotting volume with updated iELVis data (useful for debug)
+% This plots a 3-by-3 image of the post-op CT, pre-op MRI, and DK
+% parcellation in the 3 anatomical planes centered around each electrode.
+
+%{
+% load post-implant CT, pre-implant MRI, parcellation
+[~,fileName,~]=fileparts(filePath);
+patCode=fliplr(strtok(fliplr(fileName),'_'));
+switch cfg.dataType
+    case 'iELVis'
+        MRI=MRIread(fullfile(filePath,'BIDS','anat',['sub-' patCode '_brainmask.mgz']));  % load pre-implant MRI
+        CT=MRIread(fullfile(filePath,'BIDS','anat',['sub-' patCode '_postInPre.nii']));  % load post-implant CT
+        parc=MRIread(fullfile(filePath,'mri','wmparc.mgz'));  % load pre-implant MRI
+    case 'BIDS'
+        error('This script is not ready yet for BIDS data...');
+end
+elecCoordRound=round(elecCoordVol);
+
+figure;
+colormap bone;
+ids=1+table2array(fsLut(:,1)); % add 1 because FreeSurfer is 0-based but MATLAB is 1-based
+clr=table2array(fsLut(:,3:5));
+map=zeros(max(ids),1);
+map(ids)=1:length(ids);
+
+for ctElec=1:nElec
+    
+    subplot(3,3,7);
+    row_idxs=map(1+squeeze(parc.vol(elecCoordRound(ctElec,1),:,:))); % add 1 because FreeSurfer is 0-based but MATLAB is 1-based
+    imgRGB=clr(row_idxs,:);
+    imgRGB=reshape(imgRGB,[size(row_idxs) 3]);
+    imshow(imgRGB./255);
+    hold all;
+    scatter(elecCoordRound(ctElec,3),elecCoordRound(ctElec,2),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('P to A');
+    ylabel('R to L');
+    
+    subplot(3,3,8);
+    row_idxs=map(1+squeeze(parc.vol(:,elecCoordRound(ctElec,2),:))); % add 1 because FreeSurfer is 0-based but MATLAB is 1-based
+    imgRGB=clr(row_idxs,:);
+    imgRGB=reshape(imgRGB,[size(row_idxs) 3]);
+    imshow(imgRGB./255);
+    hold all;
+    scatter(elecCoordRound(ctElec,3),elecCoordRound(ctElec,1),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('P to A');
+    ylabel('S to I');
+    title([elecNames{ctElec} ' Desikan-Killiany parcellation']);
+    
+    subplot(3,3,9);
+    row_idxs=map(1+squeeze(parc.vol(:,:,elecCoordRound(ctElec,3)))); % add 1 because FreeSurfer is 0-based but MATLAB is 1-based
+    imgRGB=clr(row_idxs,:);
+    imgRGB=reshape(imgRGB,[size(row_idxs) 3]);
+    imshow(imgRGB./255);
+    hold all;
+    scatter(elecCoordRound(ctElec,2),elecCoordRound(ctElec,1),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('R to L');
+    ylabel('S to I');
+    
+    subplot(3,3,1);
+    imagesc(squeeze(CT.vol(elecCoordRound(ctElec,1),:,:)));
+    hold all;
+    scatter(elecCoordRound(ctElec,3),elecCoordRound(ctElec,2),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('P to A');
+    ylabel('R to L');
+    subplot(3,3,2);
+    imagesc(squeeze(CT.vol(:,elecCoordRound(ctElec,2),:)));
+    hold all;
+    scatter(elecCoordRound(ctElec,3),elecCoordRound(ctElec,1),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('P to A');
+    ylabel('S to I');
+    title([elecNames{ctElec} ' post-implant CT']);
+    subplot(3,3,3);
+    imagesc(squeeze(CT.vol(:,:,elecCoordRound(ctElec,3))));
+    hold all;
+    scatter(elecCoordRound(ctElec,2),elecCoordRound(ctElec,1),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('R to L');
+    ylabel('S to I');
+    
+    subplot(3,3,4);
+    imagesc(squeeze(MRI.vol(elecCoordRound(ctElec,1),:,:)));
+    hold all;
+    scatter(elecCoordRound(ctElec,3),elecCoordRound(ctElec,2),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('P to A');
+    ylabel('R to L');
+    subplot(3,3,5);
+    imagesc(squeeze(MRI.vol(:,elecCoordRound(ctElec,2),:)));
+    hold all;
+    scatter(elecCoordRound(ctElec,3),elecCoordRound(ctElec,1),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('P to A');
+    ylabel('S to I');
+    title([elecNames{ctElec} ' pre-implant MRI']);
+    subplot(3,3,6);
+    imagesc(squeeze(MRI.vol(:,:,elecCoordRound(ctElec,3))));
+    hold all;
+    scatter(elecCoordRound(ctElec,2),elecCoordRound(ctElec,1),'MarkerEdgeColor',[1 1 0],'MarkerFaceColor',[1 1 0],'MarkerFaceAlpha',0.3);
+    hold off;
+    axis image;
+    xlabel('R to L');
+    ylabel('S to I');
+    
     pause;
 end
 %}

@@ -15,7 +15,7 @@ global globalFsDir;
 globalFsDir='your\path';
 
 % select patient to plot
-fsSubj='PAT_3415';
+fsSubj='PAT_6739';
 [str,rem]=strtok(fsSubj,'_');
 
 % set basic figure plotting parameters
@@ -35,8 +35,8 @@ cfgPlot.elecShape='marker';
 cfgPlot.pullOut=0;
 
 % get electrode names and coordinates
-cfgPlot.elecNames=readiELVisElecNames(fsSubj);
-cfgPlot.elecCoord=readiELVisElecCoord(fsSubj,'LEPTO');
+cfgPlot.elecNames=readiELVisElecNames(globalFsDir,fsSubj);
+cfgPlot.elecCoord=readiELVisElecCoord(globalFsDir,fsSubj,'LEPTO');
 cfgPlot.elecCoord(:,4)=strcmp('L',cfgPlot.elecNames(:,3));
 cfgPlot.elecNames=cfgPlot.elecNames(:,1);
 
