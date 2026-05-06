@@ -1,4 +1,4 @@
-function elecCoordAvg=subj2fsaverage(filePath)
+function [elecCoordAvg,elecNames]=subj2fsaverage(filePath)
 
 % function elecCoordAvg=subj2fsaverage(filePath)
 % Get iEEG electrode coordinates in the FreeSurfer average brain (MRI305).
@@ -13,6 +13,8 @@ function elecCoordAvg=subj2fsaverage(filePath)
 % Outputs:
 %   elecCoordAvg    N-by-3 matrix with electrode coordinates in the MNI305
 %                   (fsaverage) space
+%   elecNames       N-by-3 cell array with electrode names (column 1, types
+%                   (column 2) and hemisphere (column 3)
 %
 % Requirements:
 %   FreeSurfer (for the MATLAB functions): https://surfer.nmr.mgh.harvard.edu/
