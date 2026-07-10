@@ -1,6 +1,6 @@
 function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 
-% function elecTable=SEEG2parc(cfg)
+% function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 % Attribute cerebral parcellation labels to intracranial EEG electrodes.
 %
 % In its current version, the function is compatible both with iELVis and
@@ -128,7 +128,7 @@ function [elecTable,tissueLabels,tissueWeights]=SEEG2parc(cfg)
 % weight of 1/sqrt(3).
 %
 % https://github.com/HumanNeuronLab/SEEG2parc
-% Pierre Megevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2025.
+% Pierre Megevand, Human Neuron Lab, University of Geneva, Switzerland. 2022-2026.
 % pierre.megevand@unige.ch; https://www.unige.ch/medecine/neucli/en/groupes-de-recherche/1034megevand/
 
 if ~isfield(cfg,'dataType'), error('Please specify data type (iELVis or BIDS).'); end
