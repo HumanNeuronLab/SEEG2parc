@@ -1,6 +1,6 @@
-function [elecCoordAvg,elecNames]=subj2fsaverage(filePath)
+function [elecCoordAvg,elecNames,elecCoordAvgVox]=subj2fsaverage(filePath)
 
-% function elecCoordAvg=subj2fsaverage(filePath)
+% function [elecCoordAvg,elecNames,elecCoordAvgVox]=subj2fsaverage(filePath)
 % Get iEEG electrode coordinates in the FreeSurfer average brain (MRI305).
 %
 % This is an adaptation from the sub2AvgBrain function of iELVis, by David
@@ -15,6 +15,8 @@ function [elecCoordAvg,elecNames]=subj2fsaverage(filePath)
 %                   (fsaverage) space
 %   elecNames       N-by-3 cell array with electrode names (column 1, types
 %                   (column 2) and hemisphere (column 3)
+%   elecCoordAvgVox N-by-3 matrix with electrode coordinates in the MNI305
+%                   (fsaverage) voxel space
 %
 % Requirements:
 %   FreeSurfer (for the MATLAB functions): https://surfer.nmr.mgh.harvard.edu/
@@ -29,16 +31,19 @@ filePath=regexprep(filePath,'[\\/]+$',''); % remove any trailing slashes
 % get electrode names and coordinates
 elecNames=readiELVisElecNames(datadir,patID);
 elecCoord=readiELVisElecCoord(datadir,patID,'LEPTO');
+elecCoordVox=readiELVisElecCoord(datadir,patID,'LEPTOVOX');
 isDepth=strcmp(elecNames(:,2),'D');
 isLeft=strcmp(elecNames(:,3),'L');
 
 elecCoordAvg=zeros(size(elecCoord));
+elecCoordAvgVox=zeros(size(elecCoord));
 
 
 %% depth electrodes
 
 if any(isDepth)
     elecCoordDepth=elecCoord(isDepth,:);
+    elecCoordDepthVox=elecCoordVox(isDepth,:);
     
     % get MRI transform matrices
     MRIhdr=MRIread(fullfile(datadir,patID,'mri','brainmask.mgz'),true);
@@ -52,8 +57,11 @@ if any(isDepth)
     % from tksurfer) and want to compute the MNI305 RAS that corresponds to this point:"
     elecCoordDepthAvg=(TalTransform*Norig*(Torig\[elecCoordDepth'; ones(1, sum(isDepth))]))';
     elecCoordDepthAvg=elecCoordDepthAvg(:,1:3);
+    elecCoordDepthAvgVox=(TalTransform*Norig*(Torig\[elecCoordDepthVox'; ones(1, sum(isDepth))]))';
+    elecCoordDepthAvgVox=elecCoordDepthAvgVox(:,1:3);
 
     elecCoordAvg(isDepth,:)=elecCoordDepthAvg;
+    elecCoordAvgVox(isDepth,:)=elecCoordDepthAvgVox;
 end
 
 

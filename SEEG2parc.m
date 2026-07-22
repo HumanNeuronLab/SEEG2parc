@@ -171,16 +171,34 @@ switch cfg.dataType
         elecCoordSurf=readiELVisElecCoord(datadir,patID,'LEPTO');
         
         % load volume parcellations (ILA)
-        wmparc=MRIread(fullfile(filePath,'mri',['wmparc' fileExt])); % load white matter parcellation
-        parcVol=MRIread(fullfile(filePath,'mri',[myParcVol fileExt])); % load volume parcellation
+        try % catch situation where FastSurfer was used instead of FreeSurfer, and only DKT40 atlas is available
+            wmparc=MRIread(fullfile(filePath,'mri',['wmparc' fileExt])); % load white matter parcellation
+        catch
+            wmparc=MRIread(fullfile(filePath,'mri',['wmparc.DKTatlas.mapped' fileExt])); % load white matter parcellation
+        end
+        
+        switch parcType
+            case 'DK'
+                try % catch situation where FastSurfer was used instead of FreeSurfer, and only DKT40 atlas is available
+                    parcVol=MRIread(fullfile(filePath,'mri',[myParcVol fileExt])); % load volume parcellation
+                catch
+                    parcVol=MRIread(fullfile(filePath,'mri',['aparc.DKTatlas+aseg.mapped' fileExt])); % load volume parcellation
+                end
+        end
+        
         parcVol.vol(parcVol.vol==2|parcVol.vol==41)=wmparc.vol(parcVol.vol==2|parcVol.vol==41); % replace white matter labels with DK white matter parcellation
         
         % load surface parcellations
         [vertCoordL,facesCoordL]=read_surf(fullfile(filePath,'surf','lh.pial'));
         [vertCoordR,facesCoordR]=read_surf(fullfile(filePath,'surf','rh.pial'));
-        [avertsL,alblL,actblL]=read_annotation(fullfile(filePath,'label',['l' myParcSurf]));
+        try % catch situation where FastSurfer was used instead of FreeSurfer, and only DKT40 atlas is available
+            [avertsL,alblL,actblL]=read_annotation(fullfile(filePath,'label',['l' myParcSurf]));
+            [avertsR,alblR,actblR]=read_annotation(fullfile(filePath,'label',['r' myParcSurf]));
+        catch
+            [avertsL,alblL,actblL]=read_annotation(fullfile(filePath,'label',['l' 'h.aparc.DKTatlas.mapped.annot']));
+            [avertsR,alblR,actblR]=read_annotation(fullfile(filePath,'label',['r' 'h.aparc.DKTatlas.mapped.annot']));
+        end
         avertsL=avertsL+1; % FreeSurfer indexing is 0-based
-        [avertsR,alblR,actblR]=read_annotation(fullfile(filePath,'label',['r' myParcSurf]));
         avertsR=avertsR+1; % FreeSurfer indexing is 0-based
         
     case 'BIDS'
@@ -383,11 +401,22 @@ else
     
 end
 
-% to convert tissueWeights back into a numeric cell array:
-% tissueWeights=cellfun(@str2num,elecTable.tissueWeights,'UniformOutput',false)
+
+%% potentially useful code snippets
+
+% to convert TissueLabels and TissueWeights into nElec x nLabelMax cell arrays:
+%{
+for ctElec=1:numel(tissueLabels)
+    for ctLabel=1:numel(tissueLabels{ctElec})
+        tissueLabelsArray{ctElec,ctLabel}=tissueLabels{ctElec}{ctLabel};
+        tissueWeightsArray{ctElec,ctLabel}=tissueWeights{ctElec}(ctLabel);
+    end
+end
+%}
 
 % to write elecTable as a .tsv file:
 % writetable(elecTable,'electrodes.tsv','FileType','text','Delimiter','\t');
+
 
 %% plotting volume with original iELVis data (useful for debug)
 
